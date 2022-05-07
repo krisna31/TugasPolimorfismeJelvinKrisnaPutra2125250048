@@ -1,3 +1,4 @@
+
 class Fighter extends Player {
   Fighter() {
     this.health = 100;

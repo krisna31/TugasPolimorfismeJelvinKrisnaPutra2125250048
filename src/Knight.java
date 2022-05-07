@@ -1,3 +1,4 @@
+
 class Knight extends Player {
   Knight() {
     this.health = 100;
