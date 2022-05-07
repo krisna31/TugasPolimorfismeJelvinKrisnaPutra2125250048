@@ -19,7 +19,7 @@ public class App {
                 printUppercase("mohon input sesuai opsi saja 1/2");
             role = inputanInteger("Pilih Role\n1. Knight\n2.  Fighter\nPilihan Anda : ");
         } while (role != 1 && role != 2);
-
+        printGaris();
         // input for Enemy
         int roleEnemy = 1;
         do {
@@ -27,7 +27,7 @@ public class App {
                 printUppercase("mohon input sesuai opsi saja 1/2");
             roleEnemy = inputanInteger("Pilih Enemy\n1. Slime\n2. Boar\nPilihan Anda : ");
         } while (roleEnemy != 1 && roleEnemy != 2);
-
+        printGaris();
         switch (role) {
             case 1:
                 Knight knight = new Knight();
@@ -37,13 +37,25 @@ public class App {
                         Slime slime = new Slime();
                         playGame(knight, slime);
                         break;
-
-                    default:
+                    case 2:
+                        Boar boar = new Boar();
+                        playGame(knight, boar);
                         break;
                 }
                 break;
-
-            default:
+            case 2:
+                Fighter fighter = new Fighter();
+                fighter.setNama(inputanString("Masukkan Nama : "));
+                switch (roleEnemy) {
+                    case 1:
+                        Slime slime = new Slime();
+                        playGame(fighter, slime);
+                        break;
+                    case 2:
+                        Boar boar = new Boar();
+                        playGame(fighter, boar);
+                        break;
+                }
                 break;
         }
 
@@ -53,19 +65,24 @@ public class App {
 
     // Play Game Method for Player and Enemy
     public static void playGame(Player player, Enemy enemy) {
+        // inisialisasi for ronde int variable
+        int ronde = 1, once = 0;
         // looping game
         do {
             // print player and enemy
             System.out.println("Player HP : " + player.getHealth() + "\nEnemy HP : " + enemy.getHealth());
             // rules for attack and defense
-            int once = 0;
-            if (once == 1) {
+            if (once == 0) {
+                printGaris("WHAT IS ATTACK AND DEFENSE???");
                 System.out.println(
                         "Attack : Attacking the enemy with your weapon and then enemy will attack you with random damage output");
                 System.out.println(
                         "Defense : If you feel that enemy damage is too much, you can defend yourself and will not take any damage from enemy");
                 once++;
             }
+            // printing ronde number
+            printGaris("Ronde Ke-" + ronde);
+            ronde++;
             // input for choose menu attack and defense
             int choose = 1;
             do {
@@ -159,6 +176,52 @@ abstract class Player implements Attribute {
     public boolean getUseDefense() {
         return this.useDefense;
     }
+
+    public boolean validatePlayer(Player player) {
+        return player.getHealth() <= 0 ? true : false;
+    }
+
+    public boolean validateEnemy(Enemy enemy) {
+        return enemy.getHealth() <= 0 ? true : false;
+    }
+
+    @Override
+    public void attack(Enemy enemy) {
+        System.out.println("Sebelum ==> HP Player = " + this.health);
+        System.out.println("Sebelum ==> HP Enemy = " + enemy.getHealth());
+        System.out.println("Player " + this.name + " attacking " + enemy.getType());
+        if (!this.useDefense) {
+            enemy.setHealth(enemy.getHealth() - this.attack);
+            if (validateEnemy(enemy))
+                enemy.setHealth(0);
+            System.out.println("Sesudah Player Attack ==> HP Player = " + this.health);
+            System.out.println("Sesudah Player Attack ==> HP Enemy = " + enemy.getHealth());
+            if (validateEnemy(enemy))
+                System.out.println("Enemy " + enemy.getType() + " is dead");
+        }
+        if (enemy.getHealth() <= 0)
+            System.out.println("Player " + this.name + " Has Won The Battle");
+        else {
+            if (!this.useDefense && enemy.getHealth() > 0) {
+                this.health = (int) (this.health - enemy.getAttack() * Math.round(Math.random() * 5));
+                if (validatePlayer(this))
+                    this.health = 0;
+                System.out.println("Sesudah Enemy Attack ==> HP Player = " + this.health);
+                System.out.println("Sesudah Enemy Attack ==> HP Enemy = " + enemy.getHealth());
+                if (validatePlayer(this)) {
+                    System.out.println("Player " + this.name + " is dead");
+                    System.out.println("Enemy " + enemy.getType() + " Has Won The Battle");
+                }
+            }
+        }
+        this.useDefense = false;
+    }
+
+    @Override
+    public void defense(Enemy enemy) {
+        this.useDefense = true;
+        this.attack(enemy);
+    }
 } // end of Player
 
 class Knight extends Player {
@@ -169,33 +232,6 @@ class Knight extends Player {
         this.attack = 25;
         this.useDefense = false;
     }
-
-    @Override
-    public void attack(Enemy enemy) {
-        System.out.println("Sebelum ==> HP Player = " + this.health);
-        System.out.println("Sebelum ==> HP Enemy = " + enemy.getHealth());
-        System.out.println("Player " + this.name + " attacking " + enemy.getType());
-        if (!this.useDefense) {
-            enemy.setHealth(enemy.getHealth() - this.attack);
-            System.out.println("Sesudah Player Attack ==> HP Player = " + this.health);
-            System.out.println("Sesudah Player Attack ==> HP Enemy = " + enemy.getHealth());
-        }
-        if (enemy.getHealth() < 0)
-            System.out.println("Player " + this.name + " Has Win The Battle");
-        else {
-            if (!this.useDefense) {
-                this.health = (int) (this.health - enemy.getAttack() * Math.round(Math.random() * 5));
-                System.out.println("Sesudah Enemy Attack ==> HP Player = " + this.health);
-                System.out.println("Sesudah Enemy Attack ==> HP Enemy = " + enemy.getHealth());
-            }
-        }
-    }
-
-    @Override
-    public void defense(Enemy enemy) {
-        this.useDefense = true;
-        this.attack(enemy);
-    }
 } // end of knight class
 
 class Fighter extends Player {
@@ -205,33 +241,6 @@ class Fighter extends Player {
         this.defense = 28;
         this.attack = 18;
         this.useDefense = false;
-    }
-
-    @Override
-    public void attack(Enemy enemy) {
-        System.out.println("Sebelum ==> HP Player = " + this.health);
-        System.out.println("Sebelum ==> HP Enemy = " + enemy.getHealth());
-        System.out.println("Player " + this.name + " attacking " + enemy.getType());
-        if (!this.useDefense) {
-            enemy.setHealth(enemy.getHealth() - this.attack);
-            System.out.println("Sesudah Player Attack ==> HP Player = " + this.health);
-            System.out.println("Sesudah Player Attack ==> HP Enemy = " + enemy.getHealth());
-        }
-        if (enemy.getHealth() < 0)
-            System.out.println("Player " + this.name + " Has Win The Battle");
-        else {
-            if (!this.useDefense) {
-                this.health = (int) (this.health - enemy.getAttack() * Math.round(Math.random() * 5));
-                System.out.println("Sesudah Enemy Attack ==> HP Player = " + this.health);
-                System.out.println("Sesudah Enemy Attack ==> HP Enemy = " + enemy.getHealth());
-            }
-        }
-    }
-
-    @Override
-    public void defense(Enemy enemy) {
-        this.useDefense = true;
-        this.attack(enemy);
     }
 } // end of knight class
 
